@@ -1,0 +1,20 @@
+# Dependencias y artefactos de compilación
+**/node_modules/
+**/dist/
+**/.serverless/
+*.zip
+
+# Secretos: se versionan únicamente plantillas sin valores reales
+.env
+.env.*
+!.env.example
+**/serviceAccountKey.json
+**/*service-account*.json
+*.pem
+*.key
+
+# Archivos locales
+.DS_Store
+Thumbs.db
+__pycache__/
+*.py[cod]

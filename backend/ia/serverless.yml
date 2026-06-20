@@ -1,0 +1,43 @@
+service: becas-rol3-ia-resiliencia
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  timeout: 30
+  memorySize: 512
+  environment:
+    GROQ_API_KEY: ${env:GROQ_API_KEY}
+    GROQ_MODEL: ${env:GROQ_MODEL, 'llama-3.3-70b-versatile'}
+    FIREBASE_CREDENTIALS_JSON: ${env:FIREBASE_CREDENTIALS_JSON}
+    FIRESTORE_COLLECTION: ${env:FIRESTORE_COLLECTION, 'evaluaciones'}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+          Resource: ${env:SQS_QUEUE_ARN}
+
+functions:
+  evaluarPostulacion:
+    handler: src/handlers/evaluarPostulacion.handler
+    reservedConcurrency: 5
+    events:
+      - sqs:
+          arn: ${env:SQS_QUEUE_ARN}
+          batchSize: 25
+          maximumBatchingWindow: 5
+          maximumConcurrency: 5
+          functionResponseType: ReportBatchItemFailures
+
+package:
+  patterns:
+    - '!.env'
+    - '!test-local.js'
+    - '!MANUAL_ROL3.md'

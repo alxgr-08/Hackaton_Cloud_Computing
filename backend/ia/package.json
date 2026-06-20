@@ -1,0 +1,24 @@
+{
+  "name": "rol3-ia-resiliencia",
+  "version": "1.0.0",
+  "description": "Lambda de evaluacion de postulaciones a becas - Groq LLM + manejo de resiliencia (Rol 3)",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "deploy:function": "serverless deploy function -f evaluarPostulacion",
+    "logs": "serverless logs -f evaluarPostulacion -t",
+    "remove": "serverless remove",
+    "test": "npm run test:unit",
+    "test:local": "node test-local.js",
+    "test:unit": "node tests/validarResultado.test.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.3.1",
+    "groq-sdk": "^0.7.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "serverless": "^3.40.0",
+    "serverless-offline": "^13.6.0"
+  }
+}
