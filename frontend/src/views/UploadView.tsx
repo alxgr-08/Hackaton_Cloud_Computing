@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import Papa from 'papaparse'
-import { ArrowRight, Zap, Trash2 } from 'lucide-react'
+import { ArrowRight, Trash2 } from 'lucide-react'
 import Dropzone from '../components/Dropzone'
 import type { PostulanteCSV, Vista } from '../types'
-import { MOCK_POSTULANTES } from '../data/mock'
 
 interface Props {
   onCargaCompleta: (postulantes: PostulanteCSV[]) => void
@@ -93,14 +92,6 @@ export default function UploadView({ onCargaCompleta, onEliminarBase, onNavegar,
     }
   }
 
-  async function cargarDemo() {
-    setEstado('cargando')
-    await new Promise(r => setTimeout(r, 1200))
-    onCargaCompleta(MOCK_POSTULANTES)
-    setConteo(MOCK_POSTULANTES.length)
-    setEstado('exito')
-  }
-
   function reiniciar() {
     setArchivo(null)
     setEstado('idle')
@@ -150,18 +141,7 @@ export default function UploadView({ onCargaCompleta, onEliminarBase, onNavegar,
           <Dropzone archivo={archivo} onFile={setArchivo} onClear={reiniciar} />
         )}
 
-        <div className="mt-5 flex items-center justify-between gap-3">
-          {estado === 'idle' && (
-            <button
-              onClick={cargarDemo}
-              className="flex items-center gap-2 rounded-lg border border-dashed border-steel/40 px-4 py-2.5 text-sm font-medium text-steel transition hover:border-cobalt hover:text-cobalt"
-            >
-              <Zap className="h-4 w-4" />
-              Cargar datos demo
-            </button>
-          )}
-          {estado !== 'idle' && <div />}
-
+        <div className="mt-5 flex items-center justify-end gap-3">
           {estado === 'exito' ? (
             <button
               onClick={() => onNavegar('lista')}
