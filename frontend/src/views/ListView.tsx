@@ -94,6 +94,16 @@ export default function ListView({
           <div className="mt-2.5 h-1 w-full overflow-hidden rounded-full bg-cobalt/15">
             <div className="h-full rounded-full bg-cobalt transition-[width] duration-500" style={{ width: `${pct}%` }} />
           </div>
+          {/* Escape ante backend lento/parcial: ver lo que ya llegó */}
+          {recibidas > 0 && (
+            <button
+              onClick={() => onNavegar('revision')}
+              className="mt-2.5 flex items-center gap-1.5 font-mono text-xs font-medium text-cobalt transition hover:opacity-80"
+            >
+              Ver {recibidas} resultado{recibidas !== 1 ? 's' : ''} ya disponible{recibidas !== 1 ? 's' : ''}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
       )}
 
