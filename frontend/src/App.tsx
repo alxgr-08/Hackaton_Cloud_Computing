@@ -15,12 +15,42 @@ import type {
   Vista,
 } from './types'
 
-export default function App() {
-  const [vista, setVista] = useState<Vista>('upload')
+/**
+ * Persistencia local: el padrón cargado y las decisiones del comité viven en
+ * el navegador (localStorage) para sobrevivir a un refresh. Los veredictos de
+ * IA viven en Firestore; aquí se cachean para mostrarlos al recargar.
+ */
+const STORAGE_KEY = 'becas-estado-v1'
 
-  const [postulantes, setPostulantes]   = useState<PostulanteCSV[]>([])
-  const [evaluaciones, setEvaluaciones] = useState<EvaluacionIA[]>([])
-  const [estados, setEstados]           = useState<Record<string, EstadoPostulante>>({})
+interface EstadoPersistido {
+  vista: Vista
+  postulantes: PostulanteCSV[]
+  evaluaciones: EvaluacionIA[]
+  estados: Record<string, EstadoPostulante>
+}
+
+function cargarPersistido(): Partial<EstadoPersistido> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? (JSON.parse(raw) as EstadoPersistido) : {}
+  } catch {
+    return {}
+  }
+}
+
+const inicial = cargarPersistido()
+
+export default function App() {
+  const [vista, setVista] = useState<Vista>(inicial.vista ?? 'upload')
+
+  const [postulantes, setPostulantes]   = useState<PostulanteCSV[]>(inicial.postulantes ?? [])
+  const [evaluaciones, setEvaluaciones] = useState<EvaluacionIA[]>(inicial.evaluaciones ?? [])
+  const [estados, setEstados]           = useState<Record<string, EstadoPostulante>>(inicial.estados ?? {})
+
+  // Guarda el estado en cada cambio para sobrevivir al refresh.
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ vista, postulantes, evaluaciones, estados }))
+  }, [vista, postulantes, evaluaciones, estados])
 
   // Estado del pipeline asíncrono
   const [procesando, setProcesando] = useState(false)
@@ -130,6 +160,7 @@ export default function App() {
     setProcesando(false)
     setJobId(null)
     setError('')
+    localStorage.removeItem(STORAGE_KEY)
   }
 
   const progreso = {
