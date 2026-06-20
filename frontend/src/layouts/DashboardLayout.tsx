@@ -20,12 +20,13 @@ interface Etapa {
   n: string
   nombre: string
   tagline: string
+  titulo?: string   // título de la página (si difiere del nombre corto del riel)
 }
 
 const ETAPAS: Etapa[] = [
   { id: 'upload',   n: '01', nombre: 'Ingesta',     tagline: 'Sube el padrón de postulantes' },
   { id: 'lista',    n: '02', nombre: 'Postulantes', tagline: 'Cola de evaluación' },
-  { id: 'revision', n: '03', nombre: 'Veredicto',   tagline: 'Emite las decisiones' },
+  { id: 'revision', n: '03', nombre: 'Revisión',    tagline: 'Emite las decisiones', titulo: 'Sistema de revisión de postulantes' },
   { id: 'exportar', n: '04', nombre: 'Exportar',    tagline: 'Descarga los reportes' },
 ]
 
@@ -115,7 +116,7 @@ export default function DashboardLayout({ vista, onNavegar, progreso, children }
         {/* Encabezado */}
         <header className="flex items-end justify-between gap-4 border-b border-mist bg-paper px-6 py-5">
           <div>
-            <h1 className="font-display text-2xl font-semibold tracking-tight">{actual.nombre}</h1>
+            <h1 className="font-display text-2xl font-semibold tracking-tight">{actual.titulo ?? actual.nombre}</h1>
             <p className="mt-1 text-sm text-steel">{actual.tagline}</p>
           </div>
           <div className="flex items-center gap-2 font-mono text-xs text-steel">

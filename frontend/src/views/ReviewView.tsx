@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileText, Award, Check, Archive, Trash2, ExternalLink } from 'lucide-react'
+import { FileText, Award, Check, Archive, Trash2, ExternalLink, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 import BadgeVeracidad from '../components/BadgeVeracidad'
 import ScoreRail from '../components/ScoreRail'
 import type { PostulanteCSV, EvaluacionIA, EstadoPostulante, Vista } from '../types'
@@ -13,6 +13,8 @@ interface Props {
 }
 
 type Filtro = 'todos' | 'pendiente' | 'aceptado' | 'archivado'
+type CampoOrden = 'puntaje' | 'postulante'
+type DirOrden = 'asc' | 'desc'
 
 const FILTROS: { id: Filtro; label: string }[] = [
   { id: 'todos',     label: 'Todos' },
@@ -36,8 +38,35 @@ function Metric({ valor, label, tono }: { valor: number; label: string; tono: 'i
   )
 }
 
+function SortHeader({ label, campo, orden, onClick, align = 'left' }: {
+  label: string
+  campo: CampoOrden
+  orden: { campo: CampoOrden; dir: DirOrden }
+  onClick: (c: CampoOrden) => void
+  align?: 'left' | 'center'
+}) {
+  const activo = orden.campo === campo
+  const Icono = activo ? (orden.dir === 'desc' ? ChevronDown : ChevronUp) : ChevronsUpDown
+  return (
+    <th className={`px-4 py-3 ${align === 'center' ? 'text-center' : 'text-left'}`}>
+      <button
+        onClick={() => onClick(campo)}
+        className={`inline-flex items-center gap-1 font-mono text-[11px] font-medium tracking-[0.08em] transition-colors hover:text-ink ${activo ? 'text-ink' : 'text-steel'}`}
+      >
+        {label.toUpperCase()}
+        <Icono className={`h-3.5 w-3.5 ${activo ? 'text-cobalt' : 'text-steel/50'}`} />
+      </button>
+    </th>
+  )
+}
+
 export default function ReviewView({ postulantes, evaluaciones, estados, onCambiarEstado, onNavegar }: Props) {
   const [filtro, setFiltro] = useState<Filtro>('todos')
+  const [orden, setOrden] = useState<{ campo: CampoOrden; dir: DirOrden }>({ campo: 'puntaje', dir: 'desc' })
+
+  function toggleOrden(campo: CampoOrden) {
+    setOrden(o => o.campo === campo ? { campo, dir: o.dir === 'desc' ? 'asc' : 'desc' } : { campo, dir: 'desc' })
+  }
 
   if (evaluaciones.length === 0) {
     return (
@@ -61,9 +90,15 @@ export default function ReviewView({ postulantes, evaluaciones, estados, onCambi
       estado: estados[ev.id_postulante] ?? 'pendiente' as EstadoPostulante,
     }))
     .filter(c => c.postulante !== undefined)
-    .sort((a, b) => b.puntaje_valorado - a.puntaje_valorado)
 
-  const filtrados = filtro === 'todos' ? combinados : combinados.filter(c => c.estado === filtro)
+  const ordenados = [...combinados].sort((a, b) => {
+    const cmp = orden.campo === 'puntaje'
+      ? a.puntaje_valorado - b.puntaje_valorado
+      : `${a.postulante!.nombres} ${a.postulante!.apellidos}`.localeCompare(`${b.postulante!.nombres} ${b.postulante!.apellidos}`)
+    return orden.dir === 'asc' ? cmp : -cmp
+  })
+
+  const filtrados = filtro === 'todos' ? ordenados : ordenados.filter(c => c.estado === filtro)
 
   const conteos = {
     pendiente: combinados.filter(c => c.estado === 'pendiente').length,
@@ -103,8 +138,11 @@ export default function ReviewView({ postulantes, evaluaciones, estados, onCambi
         <table className="w-full min-w-[860px] text-sm">
           <thead>
             <tr className="border-b border-mist">
-              {['Postulante', 'Resumen IA', 'Puntaje · 6·8', 'Veracidad', 'Documentos', 'Veredicto'].map((c, idx) => (
-                <th key={c} className={`px-4 py-3 font-mono text-[11px] font-medium tracking-[0.08em] text-steel ${idx >= 3 ? 'text-center' : 'text-left'}`}>
+              <SortHeader label="Postulante" campo="postulante" orden={orden} onClick={toggleOrden} />
+              <th className="px-4 py-3 text-left font-mono text-[11px] font-medium tracking-[0.08em] text-steel">RESUMEN IA</th>
+              <SortHeader label="Puntaje · 6·8" campo="puntaje" orden={orden} onClick={toggleOrden} />
+              {['Veracidad', 'Documentos', 'Veredicto'].map(c => (
+                <th key={c} className="px-4 py-3 text-center font-mono text-[11px] font-medium tracking-[0.08em] text-steel">
                   {c.toUpperCase()}
                 </th>
               ))}
