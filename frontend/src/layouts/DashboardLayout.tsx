@@ -1,114 +1,131 @@
 import type { ReactNode } from 'react'
-import {
-  GraduationCap,
-  Database,
-  Users,
-  ClipboardList,
-  Download,
-  ChevronRight,
-  Cpu,
-} from 'lucide-react'
 import type { Vista } from '../types'
+import { USE_MOCK } from '../config'
 
-interface NavItem {
-  id: Vista
-  label: string
-  sublabel: string
-  icon: typeof GraduationCap
+interface Progreso {
+  hayDatos: boolean
+  iaLista: boolean
+  hayDecisiones: boolean
 }
-
-const NAV_ITEMS: NavItem[] = [
-  { id: 'upload',   label: 'Base de Datos', sublabel: 'Carga de CSV',          icon: Database },
-  { id: 'lista',    label: 'Postulantes',   sublabel: 'Lista completa',         icon: Users },
-  { id: 'revision', label: 'Revisión IA',   sublabel: 'Toma de decisiones',     icon: ClipboardList },
-  { id: 'exportar', label: 'Exportación',   sublabel: 'Descargar reportes',     icon: Download },
-]
 
 interface Props {
   vista: Vista
   onNavegar: (v: Vista) => void
+  progreso: Progreso
   children: ReactNode
 }
 
-export default function DashboardLayout({ vista, onNavegar, children }: Props) {
-  const current = NAV_ITEMS.find(n => n.id === vista)!
+interface Etapa {
+  id: Vista
+  n: string
+  nombre: string
+  tagline: string
+}
+
+const ETAPAS: Etapa[] = [
+  { id: 'upload',   n: '01', nombre: 'Ingesta',     tagline: 'Sube el padrón de postulantes' },
+  { id: 'lista',    n: '02', nombre: 'Postulantes', tagline: 'Cola de evaluación' },
+  { id: 'revision', n: '03', nombre: 'Veredicto',   tagline: 'Emite las decisiones' },
+  { id: 'exportar', n: '04', nombre: 'Exportar',    tagline: 'Descarga los reportes' },
+]
+
+type EstadoEtapa = 'done' | 'active' | 'pending'
+
+function estadoDe(id: Vista, vista: Vista, p: Progreso): EstadoEtapa {
+  if (id === vista) return 'active'
+  if (id === 'upload'   && p.hayDatos)      return 'done'
+  if (id === 'lista'    && p.iaLista)       return 'done'
+  if (id === 'revision' && p.hayDecisiones) return 'done'
+  return 'pending'
+}
+
+function glifo(e: EstadoEtapa): string {
+  return e === 'done' ? '✓' : e === 'active' ? '◉' : '·'
+}
+
+export default function DashboardLayout({ vista, onNavegar, progreso, children }: Props) {
+  const actual = ETAPAS.find(e => e.id === vista)!
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
-      {/* ── Sidebar ── */}
-      <aside className="flex w-64 shrink-0 flex-col bg-slate-900">
-        {/* Logo */}
-        <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-900/40">
-            <GraduationCap className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-white leading-tight tracking-tight">BecasAdmin</p>
-            <p className="text-xs text-slate-400 leading-tight">Sistema de Selección</p>
-          </div>
+    <div className="flex min-h-screen bg-paper text-ink">
+      {/* ── Riel de pipeline (desktop) ── */}
+      <aside className="hidden w-60 shrink-0 flex-col bg-ink px-5 py-7 text-paper md:flex">
+        <div className="mb-9">
+          <p className="font-display text-xl font-semibold tracking-tight text-paper">VEREDICTO</p>
+          <p className="mt-0.5 text-[13px] text-steel">comité de becas</p>
         </div>
 
-        {/* Nav */}
-        <nav className="flex flex-col gap-0.5 p-3 flex-1">
-          <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-widest text-slate-500">
-            Módulos
-          </p>
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon
-            const active = vista === item.id
+        <p className="mb-3.5 font-mono text-[11px] tracking-[0.12em] text-steel">ETAPA</p>
+        <nav className="flex flex-col gap-0.5">
+          {ETAPAS.map(e => {
+            const st = estadoDe(e.id, vista, progreso)
+            const activo = st === 'active'
             return (
               <button
-                key={item.id}
-                onClick={() => onNavegar(item.id)}
-                className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-150 ${
-                  active
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-900/30'
-                    : 'text-slate-400 hover:bg-white/8 hover:text-slate-200'
+                key={e.id}
+                onClick={() => onNavegar(e.id)}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
+                  activo
+                    ? 'bg-cobalt text-white'
+                    : st === 'done'
+                    ? 'text-paper hover:bg-white/8'
+                    : 'text-steel hover:bg-white/8'
                 }`}
               >
-                <Icon className="h-4.5 w-4.5 h-[18px] w-[18px] shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate leading-tight">{item.label}</p>
-                  <p className={`text-xs truncate leading-tight ${
-                    active ? 'text-blue-200' : 'text-slate-500 group-hover:text-slate-400'
-                  }`}>
-                    {item.sublabel}
-                  </p>
-                </div>
-                {active && <ChevronRight className="h-4 w-4 text-blue-200 shrink-0" />}
+                <span className={`font-mono text-xs font-medium ${activo ? 'opacity-80' : 'opacity-50'}`}>{e.n}</span>
+                <span className="flex-1 text-sm font-medium">{e.nombre}</span>
+                <span className="text-[13px]">{glifo(st)}</span>
               </button>
             )
           })}
         </nav>
 
-        {/* Footer badge */}
-        <div className="border-t border-white/10 p-4">
-          <div className="flex items-center gap-2.5 rounded-xl bg-white/5 p-3">
-            <Cpu className="h-4 w-4 text-slate-400 shrink-0" />
-            <div>
-              <p className="text-xs font-semibold text-slate-300">Hackathon 2025</p>
-              <p className="text-xs text-slate-500">Groq API · AWS SQS · Lambda</p>
-            </div>
-          </div>
-        </div>
+        <div className="my-7 h-px bg-white/10" />
+
+        <p className="mb-2.5 font-mono text-[11px] tracking-[0.12em] text-steel">TRAZA</p>
+        <p className="mb-1.5 font-mono text-xs text-paper">gateway → groq</p>
+        <p className="flex items-center gap-2 font-mono text-xs text-steel">
+          <span className={`inline-block h-1.5 w-1.5 rounded-full ${USE_MOCK ? 'bg-revisar' : 'bg-cobalt'}`} />
+          {USE_MOCK ? 'modo demo' : 'conectado a aws'}
+        </p>
       </aside>
 
-      {/* ── Main area ── */}
-      <div className="flex flex-1 flex-col min-w-0">
-        {/* Top bar */}
-        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3.5 shadow-sm">
+      {/* ── Área principal ── */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Barra de etapas (móvil) */}
+        <div className="flex gap-1.5 overflow-x-auto border-b border-mist bg-ink px-3 py-2.5 md:hidden">
+          {ETAPAS.map(e => {
+            const st = estadoDe(e.id, vista, progreso)
+            const activo = st === 'active'
+            return (
+              <button
+                key={e.id}
+                onClick={() => onNavegar(e.id)}
+                className={`flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                  activo ? 'bg-cobalt text-white' : 'text-steel'
+                }`}
+              >
+                <span className="font-mono opacity-70">{e.n}</span>
+                {e.nombre}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Encabezado */}
+        <header className="flex items-end justify-between gap-4 border-b border-mist bg-paper px-6 py-5">
           <div>
-            <h1 className="text-base font-semibold text-slate-900 leading-tight">{current.label}</h1>
-            <p className="text-xs text-slate-400 mt-0.5">{current.sublabel}</p>
+            <h1 className="font-display text-2xl font-semibold tracking-tight">{actual.nombre}</h1>
+            <p className="mt-1 text-sm text-steel">{actual.tagline}</p>
           </div>
-          <div className="flex items-center gap-2.5">
-            <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-medium text-slate-500">Sistema activo</span>
+          <div className="flex items-center gap-2 font-mono text-xs text-steel">
+            <span className={`inline-block h-1.5 w-1.5 rounded-full ${USE_MOCK ? 'bg-revisar' : 'bg-cobalt'}`} />
+            {USE_MOCK ? 'modo demo' : 'conectado a aws'}
           </div>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-auto p-6">
+        {/* Contenido (entrada orquestada por vista) */}
+        <main key={vista} className="rise min-w-0 flex-1 overflow-auto p-6">
           {children}
         </main>
       </div>

@@ -132,8 +132,14 @@ export default function App() {
     setError('')
   }
 
+  const progreso = {
+    hayDatos: postulantes.length > 0,
+    iaLista: evaluaciones.length > 0,
+    hayDecisiones: Object.keys(estados).length > 0,
+  }
+
   return (
-    <DashboardLayout vista={vista} onNavegar={setVista}>
+    <DashboardLayout vista={vista} onNavegar={setVista} progreso={progreso}>
       {vista === 'upload' && (
         <UploadView
           onCargaCompleta={handleCargaCompleta}

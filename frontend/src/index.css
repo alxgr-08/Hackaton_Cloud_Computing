@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+@theme {
+  /* ── Neutros: grafito cálido ── */
+  --color-ink: #16181D;
+  --color-carbon: #21242B;
+  --color-steel: #6B6F76;
+  --color-mist: #E4E1DA;
+  --color-paper: #F5F4F1;
+  --color-card: #FFFFFF;
+
+  /* ── Acento: cobalto (sistema / interacción / foco) ── */
+  --color-cobalt: #2742E8;
+  --color-cobalt-wash: #EAEDFE;
+
+  /* ── Semántica de veracidad (solo dato) ── */
+  --color-veraz: #1F8A5B;
+  --color-revisar: #B6791E;
+  --color-riesgo: #C2422D;
+
+  /* ── Tipografía ── */
+  --font-display: 'Clash Display', 'Switzer', sans-serif;
+  --font-sans: 'Switzer', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -10,8 +34,32 @@ html, body, #root {
 }
 
 body {
-  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  background-color: #f1f5f9;
+  font-family: var(--font-sans);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Foco de teclado: anillo cobalto consistente en toda la app */
+:focus-visible {
+  outline: 2px solid var(--color-cobalt);
+  outline-offset: 2px;
+}
+
+/* Cifras alineadas como readout de instrumento */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Motion orquestado: entrada de página y filas escalonadas ── */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.rise {
+  animation: rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; }
 }

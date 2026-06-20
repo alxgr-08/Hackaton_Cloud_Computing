@@ -1,11 +1,10 @@
-import { Sparkles, TrendingUp, Users, ArrowRight, AlertCircle, XCircle } from 'lucide-react'
+import { Sparkles, ArrowRight, AlertCircle, XCircle } from 'lucide-react'
 import type { PostulanteCSV, Vista } from '../types'
-import { USE_MOCK } from '../config'
 
 interface Props {
   postulantes: PostulanteCSV[]
   procesando: boolean
-  recibidas: number          // cuántas evaluaciones han llegado de Firestore
+  recibidas: number
   iaCompletada: boolean
   errorPipeline: string
   onActivar: () => void
@@ -14,11 +13,12 @@ interface Props {
 
 function SkeletonRow() {
   return (
-    <tr>
-      <td className="px-4 py-3.5"><div className="h-6 w-20 animate-pulse rounded-lg bg-slate-200" /></td>
-      <td className="px-4 py-3.5"><div className="h-4 w-32 animate-pulse rounded bg-slate-200" /></td>
-      <td className="px-4 py-3.5"><div className="h-4 w-16 animate-pulse rounded bg-slate-200" /></td>
-      <td className="px-4 py-3.5"><div className="h-4 w-56 animate-pulse rounded bg-slate-200" /></td>
+    <tr className="border-t border-mist">
+      <td className="px-4 py-3.5"><div className="h-6 w-20 animate-pulse rounded-md bg-mist" /></td>
+      <td className="px-4 py-3.5"><div className="h-4 w-36 animate-pulse rounded bg-mist" /></td>
+      <td className="px-4 py-3.5"><div className="h-4 w-20 animate-pulse rounded bg-mist" /></td>
+      <td className="px-4 py-3.5"><div className="h-4 w-14 animate-pulse rounded bg-mist" /></td>
+      <td className="px-4 py-3.5"><div className="h-4 w-56 animate-pulse rounded bg-mist" /></td>
     </tr>
   )
 }
@@ -27,156 +27,124 @@ export default function ListView({
   postulantes, procesando, recibidas, iaCompletada, errorPipeline, onActivar, onNavegar,
 }: Props) {
   const sinDatos = postulantes.length === 0
+  const pct = Math.round((recibidas / Math.max(postulantes.length, 1)) * 100)
 
   return (
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-2.5">
-          <p className="text-sm text-slate-500">
-            {sinDatos ? 'No hay datos cargados' : `${postulantes.length} postulantes en base de datos`}
-          </p>
-          {/* Badge del modo activo */}
-          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-            USE_MOCK
-              ? 'bg-amber-100 text-amber-700'
-              : 'bg-emerald-100 text-emerald-700'
-          }`}>
-            {USE_MOCK ? 'Modo demo' : 'Conectado a AWS'}
-          </span>
-        </div>
+        <p className="text-sm text-steel">
+          {sinDatos ? 'No hay datos cargados' : (
+            <><span className="font-mono font-medium text-ink">{postulantes.length}</span> postulantes en base</>
+          )}
+        </p>
         <div className="flex items-center gap-2">
           {iaCompletada && (
             <button
               onClick={() => onNavegar('revision')}
-              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-[0.98]"
+              className="flex items-center gap-2 rounded-lg border border-mist bg-card px-4 py-2.5 text-sm font-medium text-ink transition hover:border-cobalt hover:text-cobalt active:scale-[0.98]"
             >
-              Ver resultados IA
+              Ver veredictos
               <ArrowRight className="h-4 w-4" />
             </button>
           )}
           <button
             onClick={onActivar}
             disabled={procesando || sinDatos || iaCompletada}
-            className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all active:scale-[0.98] ${
+            className={`flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium text-white transition active:scale-[0.98] ${
               iaCompletada
-                ? 'bg-emerald-600 cursor-default opacity-90'
+                ? 'cursor-default bg-veraz'
                 : procesando
-                ? 'bg-blue-500 cursor-wait'
+                ? 'cursor-wait bg-cobalt/80'
                 : sinDatos
-                ? 'bg-slate-300 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700'
+                ? 'cursor-not-allowed bg-steel/40'
+                : 'bg-cobalt hover:bg-cobalt/90'
             }`}
           >
             <Sparkles className="h-4 w-4" />
-            {iaCompletada ? 'IA Completada' : procesando ? 'Procesando en AWS…' : 'Activar filtrado con IA'}
+            {iaCompletada ? 'IA completada' : procesando ? 'Procesando…' : 'Activar filtrado con IA'}
           </button>
         </div>
       </div>
 
-      {/* Error del pipeline */}
+      {/* Error */}
       {errorPipeline && !procesando && (
-        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-          <XCircle className="h-5 w-5 shrink-0 text-red-500 mt-0.5" />
+        <div className="flex items-start gap-3 rounded-lg border border-riesgo/30 bg-riesgo/5 px-4 py-3">
+          <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-riesgo" />
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-red-800">No se pudo contactar al backend</p>
-            <p className="text-xs text-red-600 mt-0.5 break-words">{errorPipeline}</p>
+            <p className="text-sm font-medium text-riesgo">No se pudo contactar al backend</p>
+            <p className="mt-0.5 break-words font-mono text-xs text-riesgo/80">{errorPipeline}</p>
           </div>
         </div>
       )}
 
-      {/* Pipeline banner con progreso en tiempo real */}
+      {/* Traza del pipeline (motion) */}
       {procesando && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
+        <div className="rounded-lg border border-cobalt/30 bg-cobalt-wash/60 px-4 py-3.5">
           <div className="flex items-center gap-3">
-            <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-blue-300 border-t-blue-600" />
+            <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-cobalt/30 border-t-cobalt" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-blue-800">
-                {USE_MOCK
-                  ? 'Pipeline simulado · evaluando con IA local'
-                  : 'Pipeline activo · API Gateway → SQS → Lambda → Groq'}
-              </p>
-              <p className="text-xs text-blue-600 mt-0.5">
-                {USE_MOCK
-                  ? `Evaluando ensayos… ${recibidas}/${postulantes.length} procesados`
-                  : `Esperando resultados desde Firestore… ${recibidas}/${postulantes.length} recibidos`}
+              <p className="font-mono text-xs font-medium text-ink">gateway → sqs → lambda → groq</p>
+              <p className="mt-0.5 text-xs text-steel">
+                Evaluando ensayos · <span className="font-mono tnum">{recibidas}/{postulantes.length}</span> procesados
               </p>
             </div>
-            <span className="text-sm font-bold text-blue-700 tabular-nums">
-              {Math.round((recibidas / Math.max(postulantes.length, 1)) * 100)}%
-            </span>
+            <span className="font-mono text-sm font-medium tnum text-cobalt">{pct}%</span>
           </div>
-          {/* Barra de progreso */}
-          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-blue-100">
-            <div
-              className="h-full rounded-full bg-blue-600 transition-all duration-500"
-              style={{ width: `${(recibidas / Math.max(postulantes.length, 1)) * 100}%` }}
-            />
+          <div className="mt-2.5 h-1 w-full overflow-hidden rounded-full bg-cobalt/15">
+            <div className="h-full rounded-full bg-cobalt transition-[width] duration-500" style={{ width: `${pct}%` }} />
           </div>
         </div>
       )}
 
-      {/* Empty state */}
+      {/* Empty */}
       {sinDatos && !procesando && (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-white py-20 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
-            <Users className="h-7 w-7 text-slate-400" />
-          </div>
-          <div>
-            <p className="font-semibold text-slate-600">Sin datos cargados</p>
-            <p className="mt-1 text-sm text-slate-400">Ve a "Base de Datos" y sube el CSV de Google Forms</p>
-          </div>
+        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-mist bg-card py-20 text-center">
+          <p className="font-display text-lg font-medium text-ink">Sin padrón cargado</p>
+          <p className="-mt-1 text-sm text-steel">Sube el CSV de Google Forms en la etapa de Ingesta.</p>
           <button
             onClick={() => onNavegar('upload')}
-            className="mt-2 flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            className="mt-1 rounded-lg bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:bg-carbon"
           >
-            Ir a Base de Datos
+            Ir a Ingesta
           </button>
         </div>
       )}
 
-      {/* Table */}
+      {/* Tabla */}
       {(postulantes.length > 0 || procesando) && (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-xl border border-mist bg-card">
+          <table className="w-full min-w-[720px] text-sm">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/80">
-                {['ID', 'Nombre completo', 'DNI', 'Promedio', 'Motivación (extracto)'].map(col => (
-                  <th key={col} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    {col}
+              <tr className="border-b border-mist">
+                {['ID', 'Nombre', 'DNI', 'Promedio', 'Motivación (extracto)'].map(c => (
+                  <th key={c} className="px-4 py-3 text-left font-mono text-[11px] font-medium tracking-[0.08em] text-steel">
+                    {c.toUpperCase()}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {procesando
                 ? Array.from({ length: postulantes.length || 6 }).map((_, i) => <SkeletonRow key={i} />)
                 : postulantes.map(p => (
-                    <tr key={p.id_postulante} className="transition-colors hover:bg-slate-50/60">
+                    <tr key={p.id_postulante} className="border-t border-mist transition-colors hover:bg-cobalt-wash/40">
                       <td className="px-4 py-3.5">
-                        <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-semibold text-slate-700">
+                        <span className="whitespace-nowrap rounded-md border border-mist bg-paper px-2 py-1 font-mono text-xs font-medium text-carbon">
                           {p.id_postulante}
                         </span>
                       </td>
                       <td className="px-4 py-3.5">
-                        <p className="font-medium text-slate-800">{p.nombres} {p.apellidos}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{p.correo}</p>
+                        <p className="font-medium text-ink">{p.nombres} {p.apellidos}</p>
+                        <p className="font-mono text-xs text-steel">{p.correo}</p>
                       </td>
+                      <td className="px-4 py-3.5 font-mono text-xs text-steel">{p.dni}</td>
                       <td className="px-4 py-3.5">
-                        <span className="font-mono text-xs text-slate-600">{p.dni}</span>
+                        <span className="font-mono text-sm font-medium tnum text-ink">{p.promedio.toFixed(1)}</span>
+                        <span className="ml-0.5 font-mono text-xs text-steel">/20</span>
                       </td>
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-1.5">
-                          <TrendingUp className={`h-4 w-4 ${
-                            p.promedio >= 17 ? 'text-emerald-500' :
-                            p.promedio >= 15 ? 'text-amber-500' : 'text-red-400'
-                          }`} />
-                          <span className="font-semibold text-slate-800">{p.promedio.toFixed(1)}</span>
-                          <span className="text-slate-400 text-xs">/20</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3.5 max-w-xs">
-                        <p className="truncate text-xs text-slate-500 leading-relaxed">{p.motivacion}</p>
+                      <td className="max-w-xs px-4 py-3.5">
+                        <p className="truncate text-xs text-steel">{p.motivacion}</p>
                       </td>
                     </tr>
                   ))}
@@ -185,14 +153,13 @@ export default function ListView({
         </div>
       )}
 
-      {/* Alert IA */}
+      {/* Nota IA */}
       {!iaCompletada && !procesando && postulantes.length > 0 && (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-100 bg-amber-50 p-4">
-          <AlertCircle className="h-5 w-5 shrink-0 text-amber-500 mt-0.5" />
-          <p className="text-sm text-amber-700">
-            Datos listos. Al activar la IA, el frontend enviará únicamente{' '}
-            <strong>id_postulante, promedio, ensayo y logros</strong> al pipeline serverless
-            (los links y datos personales quedan solo en el cliente).
+        <div className="flex items-start gap-3 rounded-lg border border-mist bg-card px-4 py-3">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-cobalt" />
+          <p className="text-xs leading-relaxed text-steel">
+            Al activar la IA, el frontend envía solo <span className="font-mono text-ink">id_postulante, promedio, ensayo y logros</span>.
+            Los datos personales y los links quedan en el cliente.
           </p>
         </div>
       )}

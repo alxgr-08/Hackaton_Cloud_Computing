@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Papa from 'papaparse'
-import { CheckCircle2, ArrowRight, Zap, AlertTriangle, Trash2 } from 'lucide-react'
+import { ArrowRight, Zap, Trash2 } from 'lucide-react'
 import Dropzone from '../components/Dropzone'
 import type { PostulanteCSV, Vista } from '../types'
 import { MOCK_POSTULANTES } from '../data/mock'
@@ -15,27 +15,19 @@ interface Props {
 /** Busca un valor en una fila por coincidencia parcial (case-insensitive) en la clave. */
 function col(row: Record<string, string>, ...fragments: string[]): string {
   for (const frag of fragments) {
-    const key = Object.keys(row).find(k =>
-      k.trim().toLowerCase().includes(frag.toLowerCase())
-    )
+    const key = Object.keys(row).find(k => k.trim().toLowerCase().includes(frag.toLowerCase()))
     if (key !== undefined) return row[key]?.trim() ?? ''
   }
   return ''
 }
 
-/**
- * Mapea una fila cruda del CSV de Google Forms a la interfaz PostulanteCSV.
- * Devuelve null si la fila no tiene DNI o promedio válido.
- */
 function mapearFila(row: Record<string, string>, idx: number): PostulanteCSV | null {
   const dni = col(row, 'DNI').replace(/\D/g, '')
   if (!dni) return null
 
-  const promedioStr = col(row, 'Promedio Ponderado', 'promedio').replace(',', '.')
-  const promedio = parseFloat(promedioStr)
+  const promedio = parseFloat(col(row, 'Promedio Ponderado', 'promedio').replace(',', '.'))
   if (isNaN(promedio)) return null
 
-  // "Correo" (campo del form) tiene prioridad sobre "Dirección de correo electrónico" (login Google)
   const correoKey = Object.keys(row).find(k => k.trim() === 'Correo')
   const correo = correoKey
     ? row[correoKey]?.trim() ?? ''
@@ -55,7 +47,6 @@ function mapearFila(row: Record<string, string>, idx: number): PostulanteCSV | n
   }
 }
 
-/** Parsea el archivo CSV de Google Forms usando PapaParse. */
 function parsearCSV(file: File): Promise<PostulanteCSV[]> {
   return new Promise((resolve, reject) => {
     Papa.parse<Record<string, string>>(file, {
@@ -78,9 +69,7 @@ function parsearCSV(file: File): Promise<PostulanteCSV[]> {
 
 export default function UploadView({ onCargaCompleta, onEliminarBase, onNavegar, yaCargado }: Props) {
   const [archivo, setArchivo] = useState<File | null>(null)
-  const [estado, setEstado] = useState<'idle' | 'cargando' | 'exito' | 'error'>(
-    yaCargado ? 'exito' : 'idle'
-  )
+  const [estado, setEstado] = useState<'idle' | 'cargando' | 'exito' | 'error'>(yaCargado ? 'exito' : 'idle')
   const [conteo, setConteo] = useState(0)
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -118,7 +107,6 @@ export default function UploadView({ onCargaCompleta, onEliminarBase, onNavegar,
     setErrorMsg('')
   }
 
-  /** Elimina toda la base: limpia el estado global (postulantes, evaluaciones, decisiones). */
   function eliminarBase() {
     const ok = window.confirm(
       '¿Eliminar toda la base de datos? Se perderán los postulantes cargados, las evaluaciones de IA y las decisiones tomadas.'
@@ -131,42 +119,30 @@ export default function UploadView({ onCargaCompleta, onEliminarBase, onNavegar,
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      {/* Main card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-semibold text-slate-900 mb-1">Cargar base de postulantes</h2>
-        <p className="text-sm text-slate-500 mb-5">
-          Sube la exportación CSV de Google Forms. El sistema mapeará automáticamente
-          las cabeceras al formato interno.
+      <div className="rounded-xl border border-mist bg-card p-6">
+        <h2 className="text-sm font-medium text-ink">Cargar padrón de postulantes</h2>
+        <p className="mb-5 mt-1 text-sm text-steel">
+          Sube la exportación CSV de Google Forms. El sistema mapea las cabeceras al formato interno automáticamente.
         </p>
 
         {estado === 'exito' ? (
-          <div className="flex flex-col items-center gap-5 rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-8 py-14 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100">
-              <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+          <div className="flex flex-col items-center gap-5 rounded-xl border border-veraz/30 bg-veraz/5 px-8 py-14 text-center">
+            <p className="font-display text-2xl font-semibold text-veraz tnum">{conteo}</p>
+            <div className="-mt-3">
+              <p className="font-medium text-ink">Padrón cargado</p>
+              <p className="mt-0.5 text-sm text-steel">registros procesados y listos para evaluar</p>
             </div>
-            <div>
-              <p className="font-semibold text-emerald-800 text-base">Carga completada</p>
-              <p className="mt-1 text-sm text-emerald-600">
-                <span className="font-bold text-emerald-700">{conteo} registros</span>{' '}
-                procesados correctamente
-              </p>
-            </div>
-            <div className="flex gap-2 flex-wrap justify-center">
-              {['DNI validados', 'Promedios normalizados', 'IDs asignados', 'Listos para IA'].map(tag => (
-                <span key={tag} className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                  ✓ {tag}
-                </span>
+            <div className="flex flex-wrap justify-center gap-2">
+              {['DNI validados', 'Promedios normalizados', 'IDs asignados'].map(tag => (
+                <span key={tag} className="rounded-full bg-veraz/10 px-3 py-1 font-mono text-xs text-veraz">✓ {tag}</span>
               ))}
             </div>
           </div>
         ) : estado === 'error' ? (
-          <div className="flex flex-col items-center gap-4 rounded-2xl border-2 border-red-200 bg-red-50 px-8 py-10 text-center">
-            <AlertTriangle className="h-10 w-10 text-red-500" />
-            <div>
-              <p className="font-semibold text-red-800">Error al procesar el archivo</p>
-              <p className="mt-1 text-sm text-red-600">{errorMsg}</p>
-            </div>
-            <button onClick={reiniciar} className="rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 transition">
+          <div className="flex flex-col items-center gap-4 rounded-xl border border-riesgo/30 bg-riesgo/5 px-8 py-10 text-center">
+            <p className="font-medium text-riesgo">Error al procesar el archivo</p>
+            <p className="-mt-2 text-sm text-riesgo/80">{errorMsg}</p>
+            <button onClick={reiniciar} className="rounded-lg border border-riesgo/30 px-4 py-2 text-sm font-medium text-riesgo transition hover:bg-riesgo/10">
               Intentar de nuevo
             </button>
           </div>
@@ -175,62 +151,55 @@ export default function UploadView({ onCargaCompleta, onEliminarBase, onNavegar,
         )}
 
         <div className="mt-5 flex items-center justify-between gap-3">
-          {/* Botón demo */}
           {estado === 'idle' && (
             <button
               onClick={cargarDemo}
-              className="flex items-center gap-2 rounded-xl border border-dashed border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-100"
+              className="flex items-center gap-2 rounded-lg border border-dashed border-steel/40 px-4 py-2.5 text-sm font-medium text-steel transition hover:border-cobalt hover:text-cobalt"
             >
               <Zap className="h-4 w-4" />
               Cargar datos demo
             </button>
           )}
-          {(estado === 'cargando' || estado === 'error' || estado === 'exito') && <div />}
+          {estado !== 'idle' && <div />}
 
           {estado === 'exito' ? (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onNavegar('lista')}
-                className="flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 active:scale-[0.98]"
-              >
-                Ver postulantes
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
+            <button
+              onClick={() => onNavegar('lista')}
+              className="flex items-center gap-2 rounded-lg bg-ink px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-carbon active:scale-[0.98]"
+            >
+              Ver postulantes
+              <ArrowRight className="h-4 w-4" />
+            </button>
           ) : estado !== 'error' ? (
             <button
               onClick={cargar}
               disabled={!archivo || estado === 'cargando'}
-              className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 rounded-lg bg-cobalt px-5 py-2.5 text-sm font-medium text-white transition hover:bg-cobalt/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-steel/40"
             >
               {estado === 'cargando' ? (
                 <>
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white inline-block" />
+                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                   Procesando…
                 </>
-              ) : (
-                'Cargar CSV'
-              )}
+              ) : 'Cargar CSV'}
             </button>
           ) : null}
         </div>
       </div>
 
-      {/* Zona de peligro: eliminar toda la base */}
+      {/* Eliminar base */}
       {yaCargado && (
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-red-200 bg-red-50 p-4">
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-riesgo/30 bg-riesgo/5 p-4">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-red-800">Eliminar base de datos</p>
-            <p className="text-xs text-red-600 mt-0.5">
-              Borra todos los postulantes, las evaluaciones de IA y las decisiones. No se puede deshacer.
-            </p>
+            <p className="text-sm font-medium text-riesgo">Eliminar base de datos</p>
+            <p className="mt-0.5 text-xs text-riesgo/80">Borra postulantes, evaluaciones y decisiones. No se puede deshacer.</p>
           </div>
           <button
             onClick={eliminarBase}
-            className="flex shrink-0 items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 active:scale-[0.98]"
+            className="flex shrink-0 items-center gap-2 rounded-lg bg-riesgo px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90 active:scale-[0.98]"
           >
             <Trash2 className="h-4 w-4" />
-            Eliminar base
+            Eliminar
           </button>
         </div>
       )}
