@@ -1,0 +1,14 @@
+rules_version = '2';
+
+// ⚠️ Reglas para HACKATHON / DEMO (no producción).
+// Permiten que el frontend LEA los resultados sin login y que la Lambda
+// (vía Firebase Admin SDK) ESCRIBA. El Admin SDK ignora estas reglas,
+// por eso solo abrimos lectura al cliente y bloqueamos escritura pública.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /evaluaciones/{docId} {
+      allow read: if true;     // el dashboard lee en tiempo real
+      allow write: if false;   // solo la Lambda (Admin SDK) escribe
+    }
+  }
+}

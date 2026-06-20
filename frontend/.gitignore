@@ -1,0 +1,36 @@
+# Dependencies
+node_modules
+dist
+dist-ssr
+
+# Local env files (NUNCA subir las llaves reales)
+.env
+.env.local
+.env.*.local
+
+# Firebase
+.firebase
+firebase-debug.log
+
+# Llaves / credenciales (NUNCA subir)
+serviceAccountKey.json
+*serviceAccount*.json
+*-key.json
+*credentials*.json
+*.pem
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
