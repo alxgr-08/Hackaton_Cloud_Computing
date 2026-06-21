@@ -17,7 +17,7 @@ Lee el documento completo en [docs/CONTEXTO.md](docs/CONTEXTO.md).
 ```mermaid
 flowchart LR
   Frontend --> API_Gateway --> Lambda_Ingesta --> SQS
-  SQS --> Lambda_IA --> Groq
+  SQS --> Lambda_IA --> LLM[LLM: OpenAI activo / Groq opcional]
   Lambda_IA --> Firestore --> Frontend
   Lambda_IA -->|fallo individual| SQS
   SQS -->|3 fallos| DLQ
@@ -32,7 +32,7 @@ El detalle, controles de resiliencia y configuración están en
 frontend/              React + TypeScript + Firebase Hosting
 backend/
   ingesta/             Lambda Python: API Gateway -> SQS
-  ia/                  Lambda Node.js: SQS -> Groq -> Firestore
+  ia/                  Lambda Node.js: SQS -> LLM -> Firestore
 docs/                  Contexto, arquitectura y evidencia de demo
 MANUAL_DESPLIEGUE.md   Guía integral de despliegue
 ```
@@ -44,7 +44,8 @@ MANUAL_DESPLIEGUE.md   Guía integral de despliegue
 2. El frontend envía el lote a API Gateway.
 3. La Lambda de ingesta normaliza el contrato y envía un mensaje por
    postulación a SQS.
-4. La Lambda IA consume lotes de 25, evalúa cada postulación mediante Groq y
+4. La Lambda IA consume lotes de 25, evalúa cada postulación mediante el LLM
+   configurado (OpenAI en la configuración actual; Groq es alternativa compatible) y
    persiste resultados validados en Firestore.
 5. Ante un 429, solo los mensajes fallidos se reintentan; los persistentes se
    conservan en la DLQ.
@@ -77,7 +78,7 @@ npm run test:local
 
 Consulta [MANUAL_DESPLIEGUE.md](MANUAL_DESPLIEGUE.md) y
 [backend/ia/MANUAL_ROL3.md](backend/ia/MANUAL_ROL3.md). Nunca subir claves de
-Groq, archivos `.env` ni credenciales de Firebase.
+del proveedor LLM, archivos `.env` ni credenciales de Firebase.
 
 ## Evidencias pendientes de grabación
 

@@ -1,7 +1,7 @@
 // test-local.js
 //
 // Simula un evento de SQS con 3 postulantes de prueba, para validar TODO
-// el flujo (Groq + validacion + Firestore) sin necesidad de desplegar a
+// el flujo (LLM + validacion + Firestore) sin necesidad de desplegar a
 // AWS ni de que la cola real tenga mensajes.
 //
 // Uso:

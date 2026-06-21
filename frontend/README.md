@@ -2,7 +2,7 @@
 
 Frontend del sistema de selección de becas con **arquitectura basada en eventos**.
 Sube postulantes desde un CSV de Google Forms, dispara un pipeline serverless
-(**AWS API Gateway → SQS → Lambda → Groq LLM**) y visualiza los resultados en
+(**AWS API Gateway → SQS → Lambda → LLM configurable**) y visualiza los resultados en
 **tiempo real** mediante **Firestore**.
 
 - **Stack:** React 19 · TypeScript · Tailwind CSS v4 · Firebase (Firestore + Hosting)

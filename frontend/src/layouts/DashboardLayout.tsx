@@ -84,7 +84,7 @@ export default function DashboardLayout({ vista, onNavegar, progreso, children }
         <div className="my-7 h-px bg-white/10" />
 
         <p className="mb-2.5 font-mono text-[11px] tracking-[0.12em] text-steel">TRAZA</p>
-        <p className="mb-1.5 font-mono text-xs text-paper">gateway → groq</p>
+        <p className="mb-1.5 font-mono text-xs text-paper">gateway → LLM</p>
         <p className="flex items-center gap-2 font-mono text-xs text-steel">
           <span className={`inline-block h-1.5 w-1.5 rounded-full ${USE_MOCK ? 'bg-revisar' : 'bg-cobalt'}`} />
           {USE_MOCK ? 'modo demo' : 'conectado a aws'}

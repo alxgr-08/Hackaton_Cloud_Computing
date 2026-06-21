@@ -11,5 +11,5 @@ Antes de publicar el video, completar esta lista con capturas o enlaces:
 - [ ] Revisión humana y exportación CSV en el frontend.
 - [ ] Video de demostración en YouTube: PENDIENTE_DE_AGREGAR.
 
-> No grabar ni publicar claves de Groq, JSON de cuentas de servicio ni archivos
+> No grabar ni publicar claves del proveedor LLM, JSON de cuentas de servicio ni archivos
 > `.env`.

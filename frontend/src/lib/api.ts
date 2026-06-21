@@ -6,7 +6,7 @@ import type { EvaluacionIA, PayloadIA } from '../types'
 /**
  * Envía el lote de postulantes al pipeline serverless de AWS.
  *
- *   Frontend → POST API Gateway → SQS → Lambda (lotes 20-30) → Groq LLM
+ *   Frontend → POST API Gateway → SQS → Lambda (lotes 20-30) → LLM configurable
  *
  * El backend responde 202 (Accepted) de inmediato; los resultados llegan
  * después de forma asíncrona y se leen vía Firestore (suscribirEvaluaciones).

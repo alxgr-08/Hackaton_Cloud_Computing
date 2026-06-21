@@ -1,6 +1,7 @@
 service: becas-rol3-ia-resiliencia
 
-frameworkVersion: '4'
+frameworkVersion: '3'
+useDotenv: true
 
 provider:
   name: aws
@@ -16,8 +17,13 @@ provider:
   iam:
     role: arn:aws:iam::247169770475:role/LabRole
   environment:
-    GROQ_API_KEY: ${env:GROQ_API_KEY}
-    GROQ_MODEL: llama-3.3-70b-versatile
+    # OpenAI es el proveedor activo. Groq queda disponible como alternativa
+    # compatible mediante las mismas interfaces de aplicación.
+    LLM_PROVIDER: ${env:LLM_PROVIDER, 'openai'}
+    OPENAI_API_KEY: ${env:OPENAI_API_KEY, ''}
+    OPENAI_MODEL: ${env:OPENAI_MODEL, 'gpt-4o-mini'}
+    GROQ_API_KEY: ${env:GROQ_API_KEY, ''}
+    GROQ_MODEL: ${env:GROQ_MODEL, 'llama-3.3-70b-versatile'}
     FIRESTORE_COLLECTION: evaluaciones
     # El JSON completo de la cuenta de servicio de Firebase, como string.
     # En tu .env local va en una sola linea. NUNCA se sube a git (ver .gitignore).
@@ -28,7 +34,7 @@ functions:
     handler: src/handlers/evaluarPostulacion.handler
     timeout: 45
     # Limita cuantas invocaciones concurrentes de ESTA funcion puede haber
-    # a la vez. Es el control real de presion contra el rate limit de Groq:
+    # a la vez. Es el control real de presión contra el rate limit del LLM:
     # aunque lleguen 100 mensajes a la cola, como maximo 5 lotes se procesan
     # en paralelo, evitando saturar la API y disparar 429 en cascada.
     reservedConcurrency: 5
@@ -50,3 +56,9 @@ functions:
 plugins:
   - serverless-dotenv-plugin
   - serverless-offline
+
+package:
+  patterns:
+    - '!.env'
+    - '!test-local.js'
+    - '!MANUAL_ROL3.md'

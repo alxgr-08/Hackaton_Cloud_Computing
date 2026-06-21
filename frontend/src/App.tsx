@@ -109,7 +109,7 @@ export default function App() {
     // ── Modo demo: simula el pipeline asíncrono SOBRE TUS DATOS REALES ──
     // Evalúa cada postulante con el simulador local (evaluarMock) y entrega
     // los resultados de a uno, imitando el stream de Firestore. Así el demo
-    // refleja exactamente lo que hará Groq: 1 entrada → 1 evaluación.
+    // refleja exactamente lo que hará el LLM configurado: 1 entrada → 1 evaluación.
     if (USE_MOCK) {
       console.debug('[demo] payload que se enviaría a AWS (array):', lote)
       const acumuladas: EvaluacionIA[] = []

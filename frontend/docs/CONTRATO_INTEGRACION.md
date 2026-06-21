@@ -28,7 +28,7 @@
             ▼
 ┌─────────────────────────┐
 │  AWS Lambda (Rol 3)     │   Node.js / Python
-│  - Llama a Groq (LLM)   │
+│  - Llama al LLM configurado │
 │  - Reintenta si hay 429 │
 └───────────┬─────────────┘
             │ 4) escribe resultado (Firebase Admin SDK)
@@ -134,7 +134,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore()
 
-// Por cada resultado de Groq (doc id = id_postulante):
+// Por cada resultado del LLM (doc id = id_postulante):
 await db.collection('evaluaciones').doc(id_postulante).set({
   id_postulante,
   resumen_ensayo,

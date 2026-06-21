@@ -1,8 +1,8 @@
 # Manual de despliegue de Selecta
 
 Sistema de selección de becas. Procesa postulaciones de forma masiva y asíncrona
-mediante una arquitectura basada en eventos, integrando un LLM (Groq) para evaluar
-los ensayos y estimar el riesgo de veracidad.
+mediante una arquitectura basada en eventos, integrando un LLM configurable
+(OpenAI activo; Groq opcional) para evaluar los ensayos y estimar el riesgo de veracidad.
 
 Este documento describe cómo levantar la solución completa desde cero: backend en
 AWS, base de datos y hosting en Firebase, y frontend en React.
@@ -24,7 +24,7 @@ Amazon SQS
    v
 AWS Lambda
    |
-   | 4. evalúa cada ensayo con la API de Groq
+   | 4. evalúa cada ensayo con la API del LLM configurado
    | 5. escribe el resultado en Firestore (Firebase Admin SDK)
    v
 Cloud Firestore (colección "evaluaciones")
@@ -41,7 +41,8 @@ consulta el resultado por HTTP: lo recibe leyendo Firestore en tiempo real.
 - Node.js 18 o superior y npm.
 - Una cuenta de Google con acceso a la consola de Firebase.
 - Una cuenta de AWS con permisos para API Gateway, SQS, Lambda e IAM.
-- Una API key de Groq (https://console.groq.com/keys).
+- Una API key de OpenAI para la configuración activa. Groq puede usarse como
+  alternativa compatible si se configura `LLM_PROVIDER=groq`.
 - Firebase CLI: `npm install -g firebase-tools`.
 
 ## 3. Estructura del repositorio
@@ -126,11 +127,13 @@ cuerpo de la respuesta.
 
 - Disparada por eventos de la cola de SQS, con un tamaño de lote de 20 a 30
   mensajes.
-- Variables de entorno: la API key de Groq y las credenciales de la cuenta de
-  servicio de Firebase (paso 4).
+- Variables de entorno: `LLM_PROVIDER=openai`, `OPENAI_API_KEY`,
+  `OPENAI_MODEL` y las credenciales de la cuenta de servicio de Firebase (paso 4).
+  Para usar Groq como alternativa, configurar `LLM_PROVIDER=groq` y sus variables
+  `GROQ_*`.
 - Permisos IAM para leer y borrar mensajes de la cola
   (`sqs:ReceiveMessage`, `sqs:DeleteMessage`, `sqs:GetQueueAttributes`).
-- Manejo de errores: si Groq responde con límite de peticiones (429), el mensaje
+- Manejo de errores: si el proveedor LLM responde con límite de peticiones (429), el mensaje
   no se debe eliminar de la cola, de modo que se reintente más tarde. Los fallos
   persistentes terminan en la Dead Letter Queue sin perder datos.
 
@@ -232,13 +235,14 @@ variaciones menores en el texto de los encabezados. Hay un archivo de ejemplo en
 ## 9. Problemas frecuentes
 
 - La interfaz queda en "Procesando" y no avanza: la Lambda no está escribiendo en
-  Firestore. Revisar los logs en CloudWatch y la cuota de la API de Groq. El
+  Firestore. Revisar los logs en CloudWatch y la cuota del proveedor LLM activo.
+  El
   frontend ofrece un botón para ver los resultados parciales ya recibidos.
 - El navegador bloquea la petición con un error de CORS: falta habilitar CORS en
   API Gateway para POST y OPTIONS.
-- Los veredictos mostrados no corresponden a los postulantes cargados: la
-  colección `evaluaciones` contiene documentos de corridas anteriores. Vaciar la
-  colección antes de una corrida nueva.
+- Los veredictos mostrados no corresponden a los postulantes cargados: recargar la
+  aplicación y volver a enviar un lote aceptado. El frontend filtra los documentos
+  de Firestore por la hora de inicio de la corrida actual.
 - La interfaz no sale del modo demo: `VITE_USE_MOCK` debe ser `false` y
   `VITE_API_URL` no puede estar vacío. Reiniciar el servidor o recompilar después
   de editar `.env`.

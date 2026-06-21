@@ -20,14 +20,18 @@ cp .env.example .env
 
 Completa en `.env`:
 
-- `GROQ_API_KEY`: clave de Groq.
+- `LLM_PROVIDER=openai`: selecciona OpenAI como proveedor activo.
+- `OPENAI_API_KEY`: clave de OpenAI.
+- `OPENAI_MODEL=gpt-4o-mini`: modelo usado por la evaluación.
+- Si se necesita usar Groq como alternativa compatible, cambiar a
+  `LLM_PROVIDER=groq` y completar `GROQ_API_KEY` y `GROQ_MODEL`.
 - `FIREBASE_CREDENTIALS_JSON`: JSON completo de la cuenta de servicio de
   Firebase en una sola línea. Los saltos de línea del `private_key` deben
   quedar escapados como `\n`.
 
 ## 3. Probar el flujo en local
 
-Esta prueba llama a Groq y escribe en Firestore sin pasar por AWS Lambda ni
+Esta prueba llama al LLM configurado y escribe en Firestore sin pasar por AWS Lambda ni
 SQS. Necesita credenciales LLM válidas.
 
 ```bash
@@ -49,8 +53,8 @@ Cada vez que expire la sesión del Learner Lab:
 
 ## 5. Desplegar a AWS
 
-El archivo `serverless.yml` carga las variables desde `.env` mediante el
-soporte nativo `useDotenv` de Serverless Framework.
+El archivo `serverless.yml` carga las variables desde `.env` mediante
+`serverless-dotenv-plugin`.
 
 ```bash
 npm run deploy
@@ -68,7 +72,7 @@ En AWS Lambda:
 
 ## 7. Prueba de carga y reintentos
 
-Envía un lote limpio de 25-30 postulaciones cuando la API LLM tenga crédito.
+Envía un lote limpio de 25-30 postulaciones cuando la API del LLM tenga crédito.
 Durante el procesamiento:
 
 1. Abre CloudWatch y el grupo de logs de la Lambda.

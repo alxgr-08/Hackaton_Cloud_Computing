@@ -17,7 +17,7 @@ export interface PostulanteCSV {
 
 /**
  * Payload reducido que el frontend envía al pipeline serverless.
- * Solo los 4 campos que el backend (Groq/Lambda) necesita para evaluar.
+ * Solo los 4 campos que el backend (LLM/Lambda) necesita para evaluar.
  *
  * El cuerpo POST completo a API Gateway es: { jobId: string, postulantes: PayloadIA[] }
  */
@@ -29,7 +29,7 @@ export interface PayloadIA {
 }
 
 /**
- * Lo que el backend (Groq/Lambda) devuelve al frontend.
+ * Lo que el backend (LLM/Lambda) devuelve al frontend.
  * La Lambda escribe un documento con esta forma + un campo `jobId`
  * en la colección de Firestore `evaluaciones`. El frontend lo lee en
  * tiempo real (onSnapshot).

@@ -1,14 +1,14 @@
 import type { EvaluacionIA, NivelRiesgo, PostulanteCSV } from '../types'
 
 /**
- * Simulador local del LLM (Groq) para el MODO DEMO.
+ * Simulador local del LLM para el MODO DEMO.
  *
- * Reproduce —con una heurística simple— lo que la Lambda + Groq harán en
+ * Reproduce —con una heurística simple— lo que la Lambda + el LLM harán en
  * producción: recibe UN postulante real (los que tú subiste) y devuelve una
  * EvaluacionIA con la MISMA forma exacta que escribirá la Lambda en Firestore.
  *
  * Gracias a esto, el demo evalúa tus datos reales (no datos inventados) y el
- * día que conectes el Groq real NO cambia nada en el frontend: mismo contrato.
+ * día que conectes el LLM real NO cambia nada en el frontend: mismo contrato.
  */
 export function evaluarMock(p: PostulanteCSV): EvaluacionIA {
   const ensayo = (p.motivacion ?? '').trim()

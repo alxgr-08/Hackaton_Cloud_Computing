@@ -87,7 +87,7 @@ export default function ListView({
           <div className="flex items-center gap-3">
             <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-cobalt/30 border-t-cobalt" />
             <div className="min-w-0 flex-1">
-              <p className="font-mono text-xs font-medium text-ink">gateway → sqs → lambda → groq</p>
+              <p className="font-mono text-xs font-medium text-ink">gateway → sqs → lambda → LLM</p>
               <p className="mt-0.5 text-xs text-steel">
                 Evaluando ensayos · <span className="font-mono tnum">{recibidas}/{postulantes.length}</span> procesados
               </p>
