@@ -7,18 +7,16 @@
     "deploy": "serverless deploy",
     "deploy:function": "serverless deploy function -f evaluarPostulacion",
     "logs": "serverless logs -f evaluarPostulacion -t",
-    "remove": "serverless remove",
-    "test": "npm run test:unit",
-    "test:local": "node test-local.js",
-    "test:unit": "node tests/validarResultado.test.js"
+    "remove": "serverless remove"
   },
   "dependencies": {
     "firebase-admin": "^12.3.1",
-    "groq-sdk": "^0.7.0"
+    "groq-sdk": "^0.7.0",
+    "openai": "^6.44.0"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
-    "serverless": "^3.40.0",
+    "serverless-dotenv-plugin": "^6.0.0",
     "serverless-offline": "^13.6.0"
   }
 }
