@@ -1,12 +1,23 @@
 import importlib.util
+import json
 import sys
 import types
 import unittest
 from pathlib import Path
 
 
-# La prueba solo verifica la normalización del contrato y no hace llamadas AWS.
-fake_boto3 = types.SimpleNamespace(client=lambda _service: object())
+# La prueba valida el contrato sin hacer llamadas a AWS.
+class FakeSqs:
+    def __init__(self):
+        self.mensajes = []
+
+    def send_message(self, **kwargs):
+        self.mensajes.append(kwargs)
+        return {'MessageId': str(len(self.mensajes))}
+
+
+fake_sqs = FakeSqs()
+fake_boto3 = types.SimpleNamespace(client=lambda _service: fake_sqs)
 sys.modules.setdefault('boto3', fake_boto3)
 
 SOURCE = Path(__file__).resolve().parents[1] / 'lambda_function.py'
@@ -43,6 +54,26 @@ class NormalizarPostulanteTests(unittest.TestCase):
                 'id_postulante': 'P-003',
                 'promedio': 15,
             })
+
+    def test_lote_sobre_el_limite_no_encola_ningun_mensaje(self):
+        fake_sqs.mensajes.clear()
+        postulantes = [
+            {
+                'id_postulante': f'P-{indice:03d}',
+                'promedio': 15,
+                'ensayo': 'Quiero continuar mis estudios.',
+                'logros': 'Participación en feria académica.',
+            }
+            for indice in range(1, 102)
+        ]
+
+        respuesta = lambda_function.lambda_handler({
+            'body': json.dumps(postulantes),
+        }, None)
+
+        self.assertEqual(respuesta['statusCode'], 400)
+        self.assertIn('Saturación prevenida', json.loads(respuesta['body'])['error'])
+        self.assertEqual(fake_sqs.mensajes, [])
 
 
 if __name__ == '__main__':

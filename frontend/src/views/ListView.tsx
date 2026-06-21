@@ -28,6 +28,7 @@ export default function ListView({
 }: Props) {
   const sinDatos = postulantes.length === 0
   const pct = Math.round((recibidas / Math.max(postulantes.length, 1)) * 100)
+  const loteRechazado = /API Gateway respondió 4\d\d/.test(errorPipeline)
 
   return (
     <div className="space-y-4">
@@ -72,7 +73,9 @@ export default function ListView({
         <div className="flex items-start gap-3 rounded-lg border border-riesgo/30 bg-riesgo/5 px-4 py-3">
           <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-riesgo" />
           <div className="min-w-0">
-            <p className="text-sm font-medium text-riesgo">No se pudo contactar al backend</p>
+            <p className="text-sm font-medium text-riesgo">
+              {loteRechazado ? 'Lote rechazado por validación' : 'No se pudo contactar al backend'}
+            </p>
             <p className="mt-0.5 break-words font-mono text-xs text-riesgo/80">{errorPipeline}</p>
           </div>
         </div>

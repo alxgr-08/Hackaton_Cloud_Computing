@@ -1,4 +1,4 @@
-import { collection, onSnapshot } from 'firebase/firestore'
+import { collection, onSnapshot, query, Timestamp, where } from 'firebase/firestore'
 import { db } from './firebase'
 import { API_URL, COLECCION_EVALUACIONES } from '../config'
 import type { EvaluacionIA, PayloadIA } from '../types'
@@ -33,7 +33,13 @@ export async function enviarLoteAEvaluar(lote: PayloadIA[]): Promise<void> {
     })
 
     if (!resp.ok) {
-      const detalle = await resp.text().catch(() => '')
+      let detalle = 'No se recibió el detalle del error.'
+      try {
+        const cuerpo = await resp.json() as { error?: unknown }
+        detalle = typeof cuerpo.error === 'string' ? cuerpo.error : JSON.stringify(cuerpo)
+      } catch {
+        detalle = await resp.text().catch(() => detalle)
+      }
       throw new Error(`API Gateway respondió ${resp.status}. ${detalle}`)
     }
   } catch (e) {
@@ -56,6 +62,7 @@ export async function enviarLoteAEvaluar(lote: PayloadIA[]): Promise<void> {
  * Devuelve una función para cancelar la suscripción.
  */
 export function suscribirEvaluaciones(
+  desde: Date,
   onActualizar: (evaluaciones: EvaluacionIA[]) => void,
 ): () => void {
   if (!db) {
@@ -63,10 +70,16 @@ export function suscribirEvaluaciones(
     return () => {}
   }
 
-  const col = collection(db, COLECCION_EVALUACIONES)
+  // Solo interesan documentos actualizados durante la corrida actual. Esto
+  // evita reutilizar veredictos persistentes de una carga anterior con los
+  // mismos IDs de postulante.
+  const evaluacionesRecientes = query(
+    collection(db, COLECCION_EVALUACIONES),
+    where('actualizado_en', '>=', Timestamp.fromDate(desde)),
+  )
 
   return onSnapshot(
-    col,
+    evaluacionesRecientes,
     (snapshot) => {
       const evaluaciones = snapshot.docs.map((d) => {
         const data = d.data()

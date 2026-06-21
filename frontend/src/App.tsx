@@ -55,6 +55,7 @@ export default function App() {
   // Estado del pipeline asíncrono
   const [procesando, setProcesando] = useState(false)
   const [jobId, setJobId]           = useState<string | null>(null)
+  const [inicioCorrida, setInicioCorrida] = useState<Date | null>(null)
   const [errorPipeline, setError]   = useState<string>('')
   const desuscribir = useRef<(() => void) | null>(null)
   const navegoYa = useRef(false)
@@ -66,12 +67,12 @@ export default function App() {
    * El tablero se actualiza solo a medida que llegan.
    */
   useEffect(() => {
-    if (USE_MOCK || !jobId) return
+    if (USE_MOCK || !jobId || !inicioCorrida) return
 
     navegoYa.current = false
     const idsCargados = new Set(postulantes.map((p) => p.id_postulante))
 
-    desuscribir.current = suscribirEvaluaciones((todas) => {
+    desuscribir.current = suscribirEvaluaciones(inicioCorrida, (todas) => {
       const relevantes = todas.filter((e) => idsCargados.has(e.id_postulante))
       setEvaluaciones(relevantes)
       // Cuando llegan todos los resultados, finaliza y navega a Revisión.
@@ -88,7 +89,7 @@ export default function App() {
       desuscribir.current?.()
       desuscribir.current = null
     }
-  }, [jobId, postulantes])
+  }, [jobId, inicioCorrida, postulantes])
 
   /** Dispara el flujo: construye el payload reducido y lo envía a AWS. */
   async function iniciarEvaluacion() {
@@ -97,6 +98,7 @@ export default function App() {
     setProcesando(true)
 
     const nuevoJobId = `job-${Date.now()}`
+    const inicio = new Date()
     const lote: PayloadIA[] = postulantes.map((p) => ({
       id_postulante: p.id_postulante,
       promedio: p.promedio,
@@ -126,12 +128,19 @@ export default function App() {
 
     // ── Modo real: POST (array) a API Gateway; resultados llegan vía Firestore ──
     try {
-      setJobId(nuevoJobId)   // dispara la suscripción a Firestore (useEffect)
       await enviarLoteAEvaluar(lote)
+      // Solo observamos Firestore cuando API Gateway aceptó el lote. Así una
+      // respuesta 400 no puede mostrar veredictos de una carga anterior.
+      setInicioCorrida(inicio)
+      setJobId(nuevoJobId)
       // No navegamos aquí: el useEffect de Firestore lo hará al recibir todo.
     } catch (e) {
+      desuscribir.current?.()
+      desuscribir.current = null
       setProcesando(false)
       setJobId(null)
+      setInicioCorrida(null)
+      setEvaluaciones([])
       setError(e instanceof Error ? e.message : 'Error al enviar el lote al backend.')
     }
   }
@@ -147,6 +156,7 @@ export default function App() {
     setEstados({})
     setProcesando(false)
     setJobId(null)
+    setInicioCorrida(null)
     setError('')
   }
 
@@ -159,6 +169,7 @@ export default function App() {
     setEstados({})
     setProcesando(false)
     setJobId(null)
+    setInicioCorrida(null)
     setError('')
     localStorage.removeItem(STORAGE_KEY)
   }
