@@ -10,12 +10,12 @@ provider:
   stage: ${opt:stage, 'dev'}
   memorySize: 512
   timeout: 30
-  # AWS Academy no permite crear roles IAM nuevos (iam:CreateRole denegado).
-  # Usamos el rol "LabRole" que AWS Academy ya provisiona por defecto en
-  # cada cuenta de estudiante, con los permisos necesarios para Lambda/SQS/etc.
-  # Esta cuenta (247169770475) es la del Rol 2, donde tambien vive la cola SQS.
+  # El rol de ejecución se inyecta por variable de entorno (LAMBDA_ROLE_ARN)
+  # para no fijar la cuenta en el repositorio y que el despliegue sea
+  # reproducible. En AWS Academy se usa el rol "LabRole" que la cuenta ya
+  # provisiona, porque no se permite crear roles IAM nuevos.
   iam:
-    role: arn:aws:iam::247169770475:role/LabRole
+    role: ${env:LAMBDA_ROLE_ARN}
   environment:
     # OpenAI es el proveedor activo. Groq queda disponible como alternativa
     # compatible mediante las mismas interfaces de aplicación.
@@ -40,8 +40,8 @@ functions:
     reservedConcurrency: 5
     events:
       - sqs:
-          # ARN real de la cola SQS creada y administrada por el Rol 2
-          arn: arn:aws:sqs:us-east-1:247169770475:becas-ingesta-queue
+          # ARN de la cola SQS, inyectado por variable de entorno (.env)
+          arn: ${env:SQS_QUEUE_ARN}
           batchSize: 25            # dentro del rango 20-30 pedido por el reto
           # Para cargas pequeñas priorizamos respuesta rápida: Lambda se invoca
           # apenas haya mensajes, sin añadir una espera artificial de 5 segundos.

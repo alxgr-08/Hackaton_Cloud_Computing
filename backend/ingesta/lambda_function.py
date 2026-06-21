@@ -1,10 +1,14 @@
 import json
+import os
 import boto3
 
 # Inicializar el cliente de SQS
 sqs = boto3.client('sqs')
 
-QUEUE_URL = 'https://sqs.us-east-1.amazonaws.com/247169770475/becas-ingesta-queue'
+# La URL de la cola SQS se toma de una variable de entorno para que el
+# despliegue sea reproducible en cualquier cuenta de AWS, sin valores fijos
+# en el código (ver backend/ingesta/.env.example).
+QUEUE_URL = os.environ.get('SQS_QUEUE_URL', '').strip()
 
 
 def normalizar_postulante(postulante):
@@ -77,6 +81,16 @@ def lambda_handler(event, context):
                 'statusCode': 400,
                 'headers': {'Access-Control-Allow-Origin': '*'},
                 'body': json.dumps({'error': str(error)})
+            }
+
+        # La cola debe estar configurada por entorno antes de encolar.
+        if not QUEUE_URL:
+            return {
+                'statusCode': 500,
+                'headers': {'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({
+                    'error': 'Configuración faltante: define la variable de entorno SQS_QUEUE_URL en la Lambda de ingesta.'
+                })
             }
 
         contador = 0

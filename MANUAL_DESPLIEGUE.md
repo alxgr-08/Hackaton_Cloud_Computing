@@ -97,6 +97,9 @@ El backend está formado por API Gateway, SQS y Lambda. Configuración requerida
 - CORS habilitado para los métodos POST y OPTIONS, con
   `Access-Control-Allow-Origin` para el dominio del frontend (o `*` en desarrollo)
   y `Access-Control-Allow-Headers: Content-Type`.
+- La Lambda de ingesta lee la URL de la cola desde la variable de entorno
+  `SQS_QUEUE_URL`, de modo que no hay valores fijos en el código
+  (ver `backend/ingesta/.env.example`).
 
 Contrato de entrada. El frontend envía un array JSON, sin envoltorio:
 
@@ -127,10 +130,11 @@ cuerpo de la respuesta.
 
 - Disparada por eventos de la cola de SQS, con un tamaño de lote de 20 a 30
   mensajes.
-- Variables de entorno: `LLM_PROVIDER=openai`, `OPENAI_API_KEY`,
-  `OPENAI_MODEL` y las credenciales de la cuenta de servicio de Firebase (paso 4).
-  Para usar Groq como alternativa, configurar `LLM_PROVIDER=groq` y sus variables
-  `GROQ_*`.
+- Variables de entorno: `LLM_PROVIDER=openai`, `OPENAI_API_KEY`, `OPENAI_MODEL`,
+  las credenciales de la cuenta de servicio de Firebase (paso 4), el ARN de la
+  cola (`SQS_QUEUE_ARN`) y el rol de ejecución (`LAMBDA_ROLE_ARN`). El archivo
+  `backend/ia/.env.example` las lista todas. Para usar Groq como alternativa,
+  configurar `LLM_PROVIDER=groq` y sus variables `GROQ_*`.
 - Permisos IAM para leer y borrar mensajes de la cola
   (`sqs:ReceiveMessage`, `sqs:DeleteMessage`, `sqs:GetQueueAttributes`).
 - Manejo de errores: si el proveedor LLM responde con límite de peticiones (429), el mensaje
@@ -202,7 +206,29 @@ firebase deploy --only hosting
 Al finalizar, la CLI imprime la URL pública (por ejemplo
 `https://<proyecto>.web.app`).
 
-## 7. Verificación end to end
+## 7. Valores específicos del entorno a reemplazar
+
+El repositorio no contiene identificadores de cuenta ni claves fijas en el código:
+todos los valores propios de un despliegue se inyectan por variables de entorno o
+por archivos de configuración. Para reproducir la plataforma en otra cuenta de AWS
+o en otro proyecto de Firebase basta con reemplazar los valores de la siguiente
+tabla por los de la nueva infraestructura.
+
+| Valor | Dónde se configura | Origen |
+|---|---|---|
+| URL de la cola SQS (ingesta) | Variable `SQS_QUEUE_URL` de la Lambda de ingesta | Consola de SQS |
+| ARN de la cola SQS (IA) | Variable `SQS_QUEUE_ARN` en `backend/ia/.env` | Consola de SQS |
+| Rol de ejecución de la Lambda IA | Variable `LAMBDA_ROLE_ARN` en `backend/ia/.env` | IAM (LabRole en AWS Academy) |
+| Clave del proveedor LLM | Variable `OPENAI_API_KEY` o `GROQ_API_KEY` | Panel del proveedor |
+| Credenciales de Firebase (backend) | Variable `FIREBASE_CREDENTIALS_JSON` | Cuenta de servicio de Firebase |
+| Proyecto de Firebase (frontend) | `frontend/.firebaserc` y `firebase use` | Consola de Firebase |
+| Configuración de Firebase (frontend) | Variables `VITE_FIREBASE_*` en `frontend/.env` | SDK config de Firebase |
+| URL de API Gateway (frontend) | Variable `VITE_API_URL` en `frontend/.env` | Consola de API Gateway |
+
+Ningún valor real se versiona: los archivos `.env` están excluidos por
+`.gitignore` y cada componente incluye un `.env.example` con el formato esperado.
+
+## 8. Verificación end to end
 
 1. Abrir la URL pública. El indicador de la cabecera debe mostrar "conectado a
    aws".
@@ -225,14 +251,14 @@ la colección por REST:
 curl "https://firestore.googleapis.com/v1/projects/<proyecto>/databases/(default)/documents/evaluaciones?key=<VITE_FIREBASE_API_KEY>"
 ```
 
-## 8. Formato del archivo de entrada
+## 9. Formato del archivo de entrada
 
 El sistema acepta la exportación CSV directa de Google Forms. El frontend mapea
 las cabeceras al formato interno por coincidencia parcial, de modo que tolera
 variaciones menores en el texto de los encabezados. Hay un archivo de ejemplo en
 `frontend/public/test-becas.csv`.
 
-## 9. Problemas frecuentes
+## 10. Problemas frecuentes
 
 - La interfaz queda en "Procesando" y no avanza: la Lambda no está escribiendo en
   Firestore. Revisar los logs en CloudWatch y la cuota del proveedor LLM activo.
