@@ -84,7 +84,7 @@ Consulta [MANUAL_DESPLIEGUE.md](MANUAL_DESPLIEGUE.md) y
 [backend/ia/MANUAL_ROL3.md](backend/ia/MANUAL_ROL3.md). Nunca subir claves de
 del proveedor LLM, archivos `.env` ni credenciales de Firebase.
 
-## Evidencias pendientes de grabación
+## Evidencias de la demostración
 
-La lista precisa para la demo y el video está en
+Las capturas y el video de la demostración están enlazados en
 [docs/EVIDENCIAS_DEMO.md](docs/EVIDENCIAS_DEMO.md).
