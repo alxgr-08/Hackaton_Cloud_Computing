@@ -44,6 +44,10 @@ if (!config) {
 const client = new OpenAI({
   apiKey: config.apiKey,
   baseURL: config.baseURL,
+  // SQS controla los reintentos. Evitamos que el SDK agote tiempo dentro de
+  // una misma invocación antes de devolver el mensaje a la cola.
+  maxRetries: 0,
+  timeout: 15_000,
 });
 
 // Error custom para que el handler pueda identificar un 429 de forma explicita

@@ -43,7 +43,9 @@ functions:
           # ARN real de la cola SQS creada y administrada por el Rol 2
           arn: arn:aws:sqs:us-east-1:247169770475:becas-ingesta-queue
           batchSize: 25            # dentro del rango 20-30 pedido por el reto
-          maximumBatchingWindow: 5 # espera hasta 5s para juntar el lote antes de invocar
+          # Para cargas pequeñas priorizamos respuesta rápida: Lambda se invoca
+          # apenas haya mensajes, sin añadir una espera artificial de 5 segundos.
+          maximumBatchingWindow: 0
           # Fija la concurrencia maxima del propio trigger (ademas del
           # reservedConcurrency de la funcion), para que un futuro deploy
           # siempre la deje en 5 sin depender de ajustes manuales en consola.
