@@ -14,6 +14,10 @@ Lee el documento completo en [docs/CONTEXTO.md](docs/CONTEXTO.md).
 
 ## Arquitectura
 
+![Diagrama de arquitectura basada en eventos](docs/arquitectura.svg)
+
+Versión resumida en texto:
+
 ```mermaid
 flowchart LR
   Frontend --> API_Gateway --> Lambda_Ingesta --> SQS

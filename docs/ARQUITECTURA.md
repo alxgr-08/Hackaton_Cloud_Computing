@@ -1,5 +1,9 @@
 # Arquitectura basada en eventos
 
+![Diagrama de arquitectura basada en eventos](arquitectura.svg)
+
+## Diagrama en texto
+
 ```mermaid
 flowchart LR
     U["Comité de becas"] --> F["Frontend React\nFirebase Hosting"]
