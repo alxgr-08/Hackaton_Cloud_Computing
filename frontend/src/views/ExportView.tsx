@@ -48,9 +48,9 @@ export default function ExportView({ postulantes, evaluaciones, estados }: Props
   const total      = evaluaciones.length
 
   const tarjetas = [
-    { titulo: 'Aceptados',       desc: 'Postulantes aprobados para beca',  ids: aceptados,    nombre: 'becas_aceptados',         acento: 'veraz' as const },
-    { titulo: 'Archivados',      desc: 'En lista de espera',               ids: archivados,   nombre: 'becas_archivados',        acento: 'revisar' as const },
-    { titulo: 'Reporte completo','desc': 'Todos los postulantes evaluados', ids: evaluaciones, nombre: 'becas_reporte_completo',  acento: 'cobalt' as const },
+    { titulo: 'Aceptados',       desc: 'Postulantes aprobados para beca',  ids: aceptados,    nombre: 'selecta_aceptados',         acento: 'veraz' as const },
+    { titulo: 'Archivados',      desc: 'En lista de espera',               ids: archivados,   nombre: 'selecta_archivados',        acento: 'revisar' as const },
+    { titulo: 'Reporte completo','desc': 'Todos los postulantes evaluados', ids: evaluaciones, nombre: 'selecta_reporte_completo',  acento: 'cobalt' as const },
   ]
 
   const acentoBtn: Record<string, string> = {

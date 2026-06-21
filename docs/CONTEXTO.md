@@ -9,7 +9,7 @@ producir criterios inconsistentes entre evaluadores.
 
 ## Solución propuesta
 
-BecasAdmin procesa lotes de postulaciones y usa un LLM como apoyo a la revisión,
+Selecta procesa lotes de postulaciones y usa un LLM como apoyo a la revisión,
 no como reemplazo de la decisión humana. Para cada expediente produce un resumen,
 un puntaje orientativo de 0 a 10 y un nivel de riesgo de veracidad. El comité
 conserva las decisiones finales de aceptar, archivar o descartar.

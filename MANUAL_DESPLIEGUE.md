@@ -1,4 +1,4 @@
-# Manual de despliegue
+# Manual de despliegue de Selecta
 
 Sistema de selección de becas. Procesa postulaciones de forma masiva y asíncrona
 mediante una arquitectura basada en eventos, integrando un LLM (Groq) para evaluar

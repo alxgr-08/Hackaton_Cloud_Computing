@@ -1,4 +1,4 @@
-# BecasAdmin - selección de becas con IA resiliente
+# Selecta - selección de becas con IA resiliente
 
 Plataforma para apoyar a un comité de becas en la revisión inicial de
 postulaciones. Procesa lotes de expedientes mediante una arquitectura

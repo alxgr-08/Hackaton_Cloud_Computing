@@ -52,8 +52,8 @@ export default function DashboardLayout({ vista, onNavegar, progreso, children }
       {/* ── Riel de pipeline (desktop) ── */}
       <aside className="hidden w-60 shrink-0 flex-col bg-ink px-5 py-7 text-paper md:flex">
         <div className="mb-9">
-          <p className="font-display text-xl font-semibold tracking-tight text-paper">VEREDICTO</p>
-          <p className="mt-0.5 text-[13px] text-steel">comité de becas</p>
+          <p className="font-display text-xl font-semibold tracking-tight text-paper">SELECTA</p>
+          <p className="mt-0.5 text-[13px] text-steel">selección de becas</p>
         </div>
 
         <p className="mb-3.5 font-mono text-[11px] tracking-[0.12em] text-steel">ETAPA</p>

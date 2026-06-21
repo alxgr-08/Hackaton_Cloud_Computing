@@ -20,7 +20,7 @@ import type {
  * el navegador (localStorage) para sobrevivir a un refresh. Los veredictos de
  * IA viven en Firestore; aquí se cachean para mostrarlos al recargar.
  */
-const STORAGE_KEY = 'becas-estado-v1'
+const STORAGE_KEY = 'selecta-estado-v1'
 
 interface EstadoPersistido {
   vista: Vista

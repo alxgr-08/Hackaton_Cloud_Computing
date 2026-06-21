@@ -1,4 +1,4 @@
-# 🎓 BecasAdmin — Dashboard de Selección de Becas
+# 🎓 Selecta — Dashboard de Selección de Becas
 
 Frontend del sistema de selección de becas con **arquitectura basada en eventos**.
 Sube postulantes desde un CSV de Google Forms, dispara un pipeline serverless
